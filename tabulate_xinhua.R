@@ -1,3 +1,6 @@
+#scrape the article titles and all article
+#  pages from Xinhua's front page, then
+#  tabulate the counts of each character
 library(rvest)
 library(data.table)
 source('utils.R')

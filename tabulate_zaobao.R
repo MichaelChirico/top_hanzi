@@ -1,3 +1,7 @@
+#scrape the article titles and all article
+#  pages from Zaobao's main sections
+#  (as scraped from the front page),
+#  then tabulate the counts of each character
 library(rvest)
 library(data.table)
 source('utils.R')
