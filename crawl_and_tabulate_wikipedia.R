@@ -14,7 +14,7 @@ zh_stem = 'https://zh.wikipedia.org'
 cur_link = link_list = explored = 
   '/wiki/%E7%BB%B4%E5%9F%BA%E7%99%BE%E7%A7%91'
 
-search_size = 2500
+search_size = 1e5
 
 #/wiki/ finds internal pages;
 #  % aims to ensure some Chinese character in the URL
@@ -43,3 +43,20 @@ while (length(link_list) < search_size) {
   explored = c(explored, cur_link)
   Sys.sleep(max(.5 + rnorm(1L, sd = .1), 0))
 }
+
+save(link_list, file = 'wikipedia_link_list.RData')
+
+set.seed(02394093240)
+sample_size = 1000L
+link_sample = sample(link_list, sample_size)
+
+counts = data.table(zi = character(0), N = integer(0))
+for (link in link_sample) {
+  article_counts = read_html_or_sleep(paste0(zh_stem, link)) %>%
+    html_nodes('p,h1,h2,h3') %>% 
+    blocks_to_zi %>% zi_counts
+  counts = rbind(counts, article_counts)[ , .(N = sum(N)), by = zi]
+  Sys.sleep(max(.5 + rnorm(1L, sd = .1), 0))
+}
+
+fwrite(counts, 'wikipedia_counts.csv')
