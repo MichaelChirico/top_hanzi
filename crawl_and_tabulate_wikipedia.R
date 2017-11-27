@@ -39,7 +39,9 @@ while (length(link_list) < search_size) {
   cat(sprintf('Now here (#%d): %s [%d links found; %d accumulated]\n',
               length(explored), cur_link,
               length(links_here), length(link_list)))
-  cur_link = sample(setdiff(links_here, explored), 1L)
+  unexplored = setdiff(links_here, explored)
+  if (!length(unexplored)) unexplored = setdiff(link_list, explored)
+  cur_link = sample(unexplored, 1L)
   explored = c(explored, cur_link)
   Sys.sleep(max(.5 + rnorm(1L, sd = .1), 0))
 }
