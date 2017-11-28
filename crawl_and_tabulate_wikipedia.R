@@ -49,16 +49,18 @@ while (length(link_list) < search_size) {
 save(link_list, file = 'wikipedia_link_list.RData')
 
 set.seed(02394093240)
-sample_size = 1000L
+sample_size = 2500L
 link_sample = sample(link_list, sample_size)
 
+progress = txtProgressBar(style = 3)
 counts = data.table(zi = character(0), N = integer(0))
 for (link in link_sample) {
+  setTxtProgressBar(progress, match(link, link_sample)/sample_size)
   article_counts = read_html_or_sleep(paste0(zh_stem, link)) %>%
     html_nodes('p,h1,h2,h3') %>% 
     blocks_to_zi %>% zi_counts
   counts = rbind(counts, article_counts)[ , .(N = sum(N)), by = zi]
-  Sys.sleep(max(.5 + rnorm(1L, sd = .1), 0))
+  Sys.sleep(max(3 + rnorm(1L, sd = .5), 0))
 }
 
 fwrite(counts, 'wikipedia_counts.csv')
