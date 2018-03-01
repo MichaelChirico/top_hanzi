@@ -53,7 +53,7 @@ sample_size = 2500L
 link_sample = sample(link_list, sample_size)
 
 progress = txtProgressBar(style = 3)
-counts = data.table(zi = character(0), N = integer(0))
+counts = data.table(zi = character(0L), N = integer(0L))
 for (link in link_sample) {
   setTxtProgressBar(progress, match(link, link_sample)/sample_size)
   article_counts = read_html_or_sleep(paste0(zh_stem, link)) %>%
