@@ -17,6 +17,7 @@ blocks_to_zi = function(x) {
 # almost a perfect case for hash table
 #   -- but we want the names as well
 zi_counts = function(zi) {
+  if (is.null(zi)) return(data.table(zi = character(0L), N = integer(0L)))
   data.table(zi = zi)[ , .N, by = zi]
 }
 

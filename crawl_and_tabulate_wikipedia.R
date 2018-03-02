@@ -63,4 +63,4 @@ for (link in link_sample) {
   Sys.sleep(max(3 + rnorm(1L, sd = .5), 0))
 }
 
-fwrite(counts, 'wikipedia_counts.csv')
+fwrite(counts, 'data/wikipedia_counts.csv')

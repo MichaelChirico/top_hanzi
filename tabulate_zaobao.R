@@ -34,4 +34,4 @@ for (section in toplevel) {
   }
 }
 
-fwrite(counts, 'zaobao_counts.csv')
+fwrite(counts, 'data/zaobao_counts.csv')

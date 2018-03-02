@@ -26,4 +26,4 @@ for (article in articles) {
   Sys.sleep(1)
 }
 
-fwrite(counts, 'xinhua_counts.csv')
+fwrite(counts, 'data/xinhua_counts.csv')

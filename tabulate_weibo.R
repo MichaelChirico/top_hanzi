@@ -37,4 +37,4 @@ while (observed_characters < DESIRED_SAMPLE) {
   Sys.sleep(SLEEP_INTERVAL)
 }
 
-fwrite(counts, 'weibo_counts.csv')
+fwrite(counts, 'data/weibo_counts.csv')
