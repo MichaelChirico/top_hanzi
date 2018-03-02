@@ -1,0 +1,38 @@
+---
+title: "Hey There Hanzi'm -- Prioritizing Chinese Character Learning Empirically"
+author: "Michael Chirico"
+date: "November 27, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Data from Xinhua's Front Page
+
+See `tabulate_xinhua.R` for the script to generate this data set:
+
+```{r read_xinhua, message = FALSE}
+library(data.table)
+xinhua = fread('xinhua_counts.csv')
+xinhua
+xinhua[ , rel_freq := N/sum(N)]
+setorder(xinhua, -N)
+```
+
+Xinhua's front page produced a total of `r prettyNum(xinhua[ , sum(N)], big.mark = ',')` characters (`r prettyNum(nrow(xinhua), big.mark = ',')` of which are distinct).
+
+```{r distribution, results = 'hide'}
+xinhua[ , barplot(rel_freq, col = 'red', ylab = 'Relative Frequency',
+                  xlab = 'Individual Characters',
+                  main = paste0('Distribution of Character Frequency\n',
+                                'Xinhua News Agency Front Page'))]
+```
+
+# The 100 Most Frequent Characters on Xinhua
+
+```{r most_frequent}
+xinhua[seq_len(100L)]
+```
+
