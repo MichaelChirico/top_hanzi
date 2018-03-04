@@ -21,12 +21,25 @@ base_url = 'https://api.weibo.com/2/statuses/public_timeline.json'
 public_weibo_url = sprintf('%s?access_token=%s&count=%d', 
                            base_url, token, MAX_COUNT)
 
+# as in Slack (and WeChat, for that matter), emoji tend to 
+#   be represented as bracketed tags, e.g. [太阳] for sun
+#   or [兔子] for rabbit; since the user likely doesn't type the
+#   characters for these themselves, and since they display
+#   as pictures (not characters), they represent a substantial
+#   source of potential bias. Even though some legitimate text that
+#   just happens to be between square brackets may be lost, the
+#   prevalence of these "emoji" far outstrips anybody tweeting text
+#   in brackets; strip them away. There's also a lot of text in 
+#   between Chinese-font block brackets【】, but from a glance this
+#   appears more likely to be legitimate user input. 
+strip_emoji = function(x) gsub('\\[[^]]*\\]', '', x)
+
 observed_characters = 0L
 logprog = 1L
 counts = data.table(zi = numeric(0L), N = integer(0L))
 while (observed_characters < DESIRED_SAMPLE) {
   these_counts = read_json(public_weibo_url) %$% 
-    statuses %>% sapply(extract2, 'text') %>%
+    statuses %>% sapply(`[[`, 'text') %>% strip_emoji %>% 
     strip_nonzi %>% strsplit(NULL) %>% unlist %>% zi_counts
   observed_characters = observed_characters + these_counts[ , sum(N)]
   if (observed_characters > logprog) {
