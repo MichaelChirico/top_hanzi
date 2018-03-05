@@ -47,7 +47,8 @@ while (observed_characters < DESIRED_SAMPLE) {
     logprog = 2**ceiling(log2(observed_characters))
   }
   counts = rbind(counts, these_counts)[ , .(N = sum(N)), by = zi]
-  Sys.sleep(SLEEP_INTERVAL)
+  Sys.sleep(SLEEP_INTERVAL + runif(1L, -log(SLEEP_INTERVAL),
+                                   log(SLEEP_INTERVAL)))
 }
 
 fwrite(counts, 'data/weibo_counts.csv')
