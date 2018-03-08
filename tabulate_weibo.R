@@ -12,7 +12,7 @@ MAX_COUNT = 200L
 DESIRED_SAMPLE = 1e6
 # both to avoid breaking the service, and to help spread out
 #   the content of the posts more substantially
-SLEEP_INTERVAL = 360
+SLEEP_INTERVAL = 420
 # infinite gratitude to Yecheng Tan, who authored this post
 #   that finally got me past an impasse in getting an access token:
 #   https://gwu-libraries.github.io/sfm-ui/posts/2016-04-26-weibo-api-guide
