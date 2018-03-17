@@ -22,7 +22,7 @@ for (article in articles) {
     html_nodes(xpath = '//p|//div[@class="h-title"]') %>% 
     blocks_to_zi %>% zi_counts
   #concatenate and condense
-  counts = rbind(counts, article_counts)[ , .(N = sum(N)), by = zi]
+  counts = rbind(counts, article_counts)[ , .(N = sum(N)), keyby = zi]
   Sys.sleep(1)
 }
 

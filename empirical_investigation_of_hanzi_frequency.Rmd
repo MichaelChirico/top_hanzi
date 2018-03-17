@@ -1,7 +1,7 @@
 ---
-title: "Hey There Hanzi'm -- Prioritizing Chinese Character Learning Empirically"
+title: "An Empiricist's Guide to Learning Chinese Characters"
 author: "Michael Chirico"
-date: "November 27, 2017"
+date: "`r format(as.POSIXlt(Sys.time()), usetz = TRUE)`"
 output: html_document
 ---
 
@@ -9,13 +9,55 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Having recently moved to Singapore (where _linguae francae_ Mandarin and English are joined by Tamil and Malay as official languages, [see this day-to-day staple](https://c1.staticflickr.com/6/5555/15229811561_576a7f4c04_b.jpg)) and joined a team with a large presence of native Mandarin speakers, I decided to get my act in gear (again) and dive into learning Mandarin.
+
+<!-- add cultural caveats above -- using simplified characters, arbitrarily adding spaces as desired, being pedantic about including tones, being pedantic about Mandarin vs. Chinese, etc -->
+
+<!-- convert some of the below to footnotes/generally condense -->
+
+<!-- footnote re: encoding nightmares? -->
+
+I think there are four major hurdles to learning Mandarin, at least for a native English speaker such as myself:
+
+ 1. It's tonal -- how you say pretty much _every_ syllable matters (just try mispronouncing the innocuous "Do you want water?"~"你想水吗?" as I did very early on). English has hints of this -- my canonical examples are the words "what" and "hmm" (also profanity). It's hard to convey in text, but here goes. There's the curt "what." of impatience which maps to Mandarin's "4th"/"down" tone, "whàt"; the incredulous "whaaat" maps to the "1st"/"flat" tone, "whāt"; the basic inquisitive "what?" rises and corresponds to the "2nd"/"up" tone, "whát"; and finally the facetious "Who, moi?"-style "what" that basically matches Mandarin's "3rd"/"bouncing" tone "whǎt" (which is a pain to type). If you think this is confusing, imagine being able to distinguish the six tones of Vietnamese, the five tones of Thai, or the _nine_ tones of Cantonese.
+ 
+ 2. There are completely novel vowels and consonants. Tones aside, pronouncing xu and shu as distinct (and moreover being able to _hear_ difference) is nigh impossible for beginners who are not speech therapists or phoneticists and have never heard of [palatal consonants](https://en.wikipedia.org/wiki/Alveolo-palatal_consonant). The same goes for xiang/shang, zhu/ju, etc. Throw into the mix the almost-whistled u vowel (e.g., in the word for fish, 鱼=yú) and the umlauted u (ü) which is found in the word for woman (女=nǚ) and your oral confidence is bound to be in the gutter for quite some time while you try and wrap your tongue around these new shapes (it probably took me the better part of a decade to be able to half-confidently roll my "r"s to speak Spanish, for reference). I just encountered 准确=zhǔnquè and it's giving me nightmares.
+ 
+ 3. [成语=chéngyǔ](https://en.wikipedia.org/wiki/Chengyu), the four-character idiomatic expressions which are ubiquitous in common parlance (the now-common English expression "long time no see" [may](https://en.wikipedia.org/wiki/Long_time_no_see) derive from the Mandarin 好久不见=hǎojiǔ bùjiàn). This is of course a problem in most languages, but as an American, it feels particularly intimidating for Mandarin, where so few of these idioms are shared, compounded by the almost unfathomably long history of China on and throughout which this vocabulary has been assembled.
+ 
+ <!-- footnote re: japanese advantage? -->
+ 
+ 4. The pictographic characters (汉字=hànzi) themselves. Knowing the Roman alphabet gets you ready to read (up to a first order approximation) new words in a huge swathe of new languages -- French, Spanish, Portugese, Italian, German, Czech, Swedish, Finnish, Turkish, even as remote as Vietnamese all have their share of quirky accents/symbols, but by and large can be grokked as essentially cognate at first glance, on day one of your studies. Mandarin has pinyin, but you're basically limited to spoken Mandarin without being conversant in characters -- and even then, an ever-present ritual of introductions among Chinese is to establish who has what characters in their name. Your eyes will glaze over quickly if you don't have a mental model of at least the most common characters to fall back on.
+ 
+The remainder of this post will focus on the final point. Depending on your source, there are [as many as **100,000**](https://en.wikipedia.org/wiki/Chinese_characters#Number_of_characters) distinct characters in total. Unless you're some kind of wizard, it's not realistic to try and achieve that level of comprehension, perhaps even for native speakers. The fact is, most native literate Chinese are comfortable with something like 3,000-4,000 characters. Even [Unicode only provides code points](https://stackoverflow.com/a/41155368/3576984) for about 28,000 characters in all of Chinese, Japanese, and Korean, which includes significant duplication owing to often two and sometimes three depictions of the same character depending on the level of [simplification](https://en.wikipedia.org/wiki/Chinese_Character_Simplification_Scheme), e.g. labor (劳 in simplified Chinese, 労 in Japanese, and 勞 in traditional Chinese).
+
+That said, you're a busy person, with finite time to commit to learning this funny new system of expressing yourself and otherstanding others in writing. How should you go about doing so effectively? 
+
+There are several valid answers to this question. This post will dedicate itself to helping you proceed according to one particular answer, namely -- you should study first those characters which appear most frequently. 
+
+## A First Pass at Empirical Frequency
+
+Now that we've defined our goal clearly, it should be _easy_ to provide a quantitative answer -- all we've got to do is find a suitable dataset!
+
+With this in mind, I fired up my [`xpath`](https://www.w3schools.com/xml/xpath_intro.asp) skills and navigated on over to the website of China's official state media organization, [Xinhua=新华](http://www.xinhuanet.com/). Even if you don't understand a white of Chinese, knowing that it's a news website, the basic structure should be clear. The day's top headlines (at least according to Xinhua's editors) are presented with pictures and links to articles.
+
+I decided to pull all the characters from all links (`<a>` nodes) on the top page, then follow all of the internal links on the first page and pull the characters from the linked pages as well. Some links/photo captions/paragraphs are intentionally duplicated, so subsequent instances of identical blocks were eliminated. Full code is available on the [project's GitHub repo](https://github.com/MichaelChirico/top_hanzi); here's the core snippet that extracts and counts the characters from an article:
+
+```{r counts_from_xinhua_article, eval = FALSE}
+article_counts = read_html_or_sleep(article) %>% 
+  html_nodes(xpath = '//p|//div[@class="h-title"]') %>% 
+  blocks_to_zi %>% zi_counts
+```
+
+`article` is a URL string; [`blocks_to_zi`](https://github.com/MichaelChirico/top_hanzi/blob/master/utils.R#L12-L15) takes nodes, converts them to text, strips non-Chinese characters, eliminates duplicates, then converts strings to individual characters; [`zi_counts`](https://github.com/MichaelChirico/top_hanzi/blob/master/utils.R#L19-L22) takes a vector of characters and converts them to a [`data.table`](https://github.com/Rdatatable/data.table) of unique characters and their frequency in the vector.
+
 # Data from Xinhua's Front Page
 
 See `tabulate_xinhua.R` for the script to generate this data set:
 
 ```{r read_xinhua, message = FALSE}
 library(data.table)
-xinhua = fread('xinhua_counts.csv')
+xinhua = fread('data/xinhua_counts.csv')
 xinhua
 xinhua[ , rel_freq := N/sum(N)]
 setorder(xinhua, -N)
