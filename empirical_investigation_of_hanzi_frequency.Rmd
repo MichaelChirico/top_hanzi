@@ -7,6 +7,36 @@ output: html_document
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(data.table)
+library(magrittr)
+library(sp)
+library(viridis)
+
+topN = 500L
+n_colors = 50L
+char_row = 25L
+
+plot_grid = SpatialPolygonsDataFrame(
+  as(GridTopology(c(.5, .5), c(1, 1), 
+                  c(char_row, topN/char_row)),
+     'SpatialPolygons'),
+  # default plot order goes by row,
+  #   to order going down columns use:
+  #   ID = c(matrix(1:500, 25, 20, byrow = TRUE))
+  data = data.frame(ID = seq_len(topN)), match.ID = FALSE
+)
+plot_xy = coordinates(plot_grid)
+
+colors = viridis(n_colors)
+# should text over the colors be black or white?
+#   based on this answer here?
+# https://stackoverflow.com/a/3943023/3576984
+black_white = function(r, g, b) {
+  is_black = 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.179
+  c('#ffffff', '#000000')[is_black + 1L]
+}
+color_bw = apply(colorspace::hex2RGB(colors, gamma = TRUE)@coords, 1L,
+                 function(rgb) black_white(rgb['R'], rgb['G'], rgb['B']))
 ```
 
 Having recently moved to Singapore (where _linguae francae_ Mandarin and English are joined by Tamil and Malay as official languages, [see this day-to-day staple](https://c1.staticflickr.com/6/5555/15229811561_576a7f4c04_b.jpg)) and joined a team with a large presence of native Mandarin speakers, I decided to get my act in gear (again) and dive into learning Mandarin.
@@ -19,9 +49,9 @@ Having recently moved to Singapore (where _linguae francae_ Mandarin and English
 
 I think there are four major hurdles to learning Mandarin, at least for a native English speaker such as myself:
 
- 1. It's tonal -- how you say pretty much _every_ syllable matters (just try mispronouncing the innocuous "Do you want water?"~"你想水吗?" as I did very early on). English has hints of this -- my canonical examples are the words "what" and "hmm" (also profanity). It's hard to convey in text, but here goes. There's the curt "what." of impatience which maps to Mandarin's "4th"/"down" tone, "whàt"; the incredulous "whaaat" maps to the "1st"/"flat" tone, "whāt"; the basic inquisitive "what?" rises and corresponds to the "2nd"/"up" tone, "whát"; and finally the facetious "Who, moi?"-style "what" that basically matches Mandarin's "3rd"/"bouncing" tone "whǎt" (which is a pain to type). If you think this is confusing, imagine being able to distinguish the six tones of Vietnamese, the five tones of Thai, or the _nine_ tones of Cantonese.
+ 1. It's tonal -- how you say pretty much _every_ syllable matters (just try mispronouncing the innocuous "Do you want water?"~"你想水吗?" and watch the grins of the natives). English has hints of this -- my canonical examples are the words "what" and "hmm" (also profanity). It's hard to convey in text, but here goes. There's the curt "what." of impatience which maps to Mandarin's "4th"/"down" tone, "whàt"; the incredulous "whaaat" maps to the "1st"/"flat" tone, "whāt"; the basic inquisitive "what?" rises and corresponds to the "2nd"/"up" tone, "whát"; and finally the facetious "Who, moi?"-style "what" that basically matches Mandarin's "3rd"/"bouncing" tone "whǎt" (which is a pain to type). The point is, _how_ someone says "what" impacts your parsing of it. If you think this is confusing, imagine being able to distinguish the six tones of Vietnamese, the five tones of Thai, or the _nine_ tones of Cantonese. It's like transforming into a [mantis](https://www.youtube.com/watch?v=F5FEj9U-CJM) [shrimp](http://theoatmeal.com/comics/mantis_shrimp) and gaining new photoreceptors. 
  
- 2. There are completely novel vowels and consonants. Tones aside, pronouncing xu and shu as distinct (and moreover being able to _hear_ difference) is nigh impossible for beginners who are not speech therapists or phoneticists and have never heard of [palatal consonants](https://en.wikipedia.org/wiki/Alveolo-palatal_consonant). The same goes for xiang/shang, zhu/ju, etc. Throw into the mix the almost-whistled u vowel (e.g., in the word for fish, 鱼=yú) and the umlauted u (ü) which is found in the word for woman (女=nǚ) and your oral confidence is bound to be in the gutter for quite some time while you try and wrap your tongue around these new shapes (it probably took me the better part of a decade to be able to half-confidently roll my "r"s to speak Spanish, for reference). I just encountered 准确=zhǔnquè and it's giving me nightmares.
+ 2. There are completely novel vowels and consonants. Tones aside, pronouncing xu and shu as distinct (and moreover being able to _hear_ difference) is nigh impossible for beginners who are not speech therapists or phoneticists and have never heard of [palatal consonants](https://en.wikipedia.org/wiki/Alveolo-palatal_consonant). The same goes for xiang/shang, zhu/ju, etc. Throw into the mix the almost-whistled u vowel (e.g., in the word for fish, 鱼=yú) and the umlauted u (ü) which is found in the word for woman (女=nǚ) and your oral confidence is bound to be in the gutter for quite some time while you try and wrap your tongue around these new shapes (it probably took me the better part of an on-and-off decade to be able to half-confidently roll my "r"s to speak Spanish, for reference). I just encountered 准确=zhǔnquè and it's giving me nightmares.
  
  3. [成语=chéngyǔ](https://en.wikipedia.org/wiki/Chengyu), the four-character idiomatic expressions which are ubiquitous in common parlance (the now-common English expression "long time no see" [may](https://en.wikipedia.org/wiki/Long_time_no_see) derive from the Mandarin 好久不见=hǎojiǔ bùjiàn). This is of course a problem in most languages, but as an American, it feels particularly intimidating for Mandarin, where so few of these idioms are shared, compounded by the almost unfathomably long history of China on and throughout which this vocabulary has been assembled.
  
@@ -51,25 +81,49 @@ article_counts = read_html_or_sleep(article) %>%
 
 `article` is a URL string; [`blocks_to_zi`](https://github.com/MichaelChirico/top_hanzi/blob/master/utils.R#L12-L15) takes nodes, converts them to text, strips non-Chinese characters, eliminates duplicates, then converts strings to individual characters; [`zi_counts`](https://github.com/MichaelChirico/top_hanzi/blob/master/utils.R#L19-L22) takes a vector of characters and converts them to a [`data.table`](https://github.com/Rdatatable/data.table) of unique characters and their frequency in the vector.
 
+```{r read_xinhua, echo = FALSE, message = FALSE}
+xinhua = fread('data/xinhua_counts.csv')
+setorder(xinhua, -N)
+# not ranking since don't want to deal with ties
+xinhua[ , I := .I]
+c
+xinhua_unique_n = prettyNum(nrow(xinhua), big.mark = ',')
+
+xinhua_n = xinhua[ , sum(N)]
+xinhua_n_order = floor(log10(xinhua_n))
+xinhua_n_approx = sprintf('%%%d.0f', xinhua_n_order) %>%
+  sprintf(round(xinhua_n, -xinhua_n_order)) %>%
+  prettyNum(big.mark = ',')
+```
+
+Doing so created a dataset of roughly `r xinhua_n_approx` appearances of `r xinhua_unique_n` distinct characters. 
+
+```{r plot_xinhua, results = 'hide', echo = FALSE, fig.height = 9}
+# add the top characters to plot_grid
+plot_grid = merge(plot_grid, xinhua, by.x = 'ID', by.y = 'I')
+
+color_idx = findInterval(plot_grid$N, seq(0, max(plot_grid$N), 
+                                          length.out = n_colors),
+                         rightmost.closed = TRUE)
+
+plot(plot_grid, col = colors[color_idx],
+     main = sprintf('%d Most Frequent Characters in Xinhua\n%d Per Row', 
+                    topN, char_row))
+text(plot_xy, labels = plot_grid$zi, col = color_bw[color_idx])
+```
+
+
 # Data from Xinhua's Front Page
 
 See `tabulate_xinhua.R` for the script to generate this data set:
 
-```{r read_xinhua, message = FALSE}
-library(data.table)
-xinhua = fread('data/xinhua_counts.csv')
-xinhua
-xinhua[ , rel_freq := N/sum(N)]
-setorder(xinhua, -N)
-```
-
 Xinhua's front page produced a total of `r prettyNum(xinhua[ , sum(N)], big.mark = ',')` characters (`r prettyNum(nrow(xinhua), big.mark = ',')` of which are distinct).
 
 ```{r distribution, results = 'hide'}
-xinhua[ , barplot(rel_freq, col = 'red', ylab = 'Relative Frequency',
-                  xlab = 'Individual Characters',
-                  main = paste0('Distribution of Character Frequency\n',
-                                'Xinhua News Agency Front Page'))]
+# xinhua[ , barplot(rel_freq, col = 'red', ylab = 'Relative Frequency',
+#                   xlab = 'Individual Characters',
+#                   main = paste0('Distribution of Character Frequency\n',
+#                                 'Xinhua News Agency Front Page'))]
 ```
 
 # The 100 Most Frequent Characters on Xinhua
