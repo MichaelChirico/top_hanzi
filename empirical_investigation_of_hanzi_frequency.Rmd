@@ -47,9 +47,11 @@ Having recently moved to Singapore (where _linguae francae_ Mandarin and English
 
 <!-- footnote re: encoding nightmares? -->
 
+<!-- interactive/clickable plot with links to dictionary -->
+
 I think there are four major hurdles to learning Mandarin, at least for a native English speaker such as myself:
 
- 1. It's tonal -- how you say pretty much _every_ syllable matters (just try mispronouncing the innocuous "Do you want water?"~"你想水吗?" and watch the grins of the natives). English has hints of this -- my canonical examples are the words "what" and "hmm" (also profanity). It's hard to convey in text, but here goes. There's the curt "what." of impatience which maps to Mandarin's "4th"/"down" tone, "whàt"; the incredulous "whaaat" maps to the "1st"/"flat" tone, "whāt"; the basic inquisitive "what?" rises and corresponds to the "2nd"/"up" tone, "whát"; and finally the facetious "Who, moi?"-style "what" that basically matches Mandarin's "3rd"/"bouncing" tone "whǎt" (which is a pain to type). The point is, _how_ someone says "what" impacts your parsing of it. If you think this is confusing, imagine being able to distinguish the six tones of Vietnamese, the five tones of Thai, or the _nine_ tones of Cantonese. It's like transforming into a [mantis](https://www.youtube.com/watch?v=F5FEj9U-CJM) [shrimp](http://theoatmeal.com/comics/mantis_shrimp) and gaining new photoreceptors. 
+ 1. It's tonal -- how you say pretty much _every_ syllable matters (just try mispronouncing the innocuous "Do you want water?"~"你想水吗?" and watch the grins of the natives). English has hints of this -- my canonical examples are the words "what" and "hmm" (also profanity). It's hard to convey in text, but here goes. There's the curt "what." of impatience which maps to Mandarin's "4th"/"down" tone, "whàt"; the incredulous "whaaat" maps to the "1st"/"flat" tone, "whāt"; the basic inquisitive "what?" rises and corresponds to the "2nd"/"up" tone, "whát"; and finally the facetious "Whro, moi?"-style "what" that basically matches Mandarin's "3rd"/"bouncing" tone "whǎt" (which is a pain to type). The point is, _how_ someone says "what" impacts your parsing of it. If you think this is confusing, imagine being able to distinguish the six tones of Vietnamese, the five tones of Thai, or the _nine_ tones of Cantonese. It's like transforming into a [mantis](https://www.youtube.com/watch?v=F5FEj9U-CJM) [shrimp](http://theoatmeal.com/comics/mantis_shrimp) and gaining new photoreceptors. 
  
  2. There are completely novel vowels and consonants. Tones aside, pronouncing xu and shu as distinct (and moreover being able to _hear_ difference) is nigh impossible for beginners who are not speech therapists or phoneticists and have never heard of [palatal consonants](https://en.wikipedia.org/wiki/Alveolo-palatal_consonant). The same goes for xiang/shang, zhu/ju, etc. Throw into the mix the almost-whistled u vowel (e.g., in the word for fish, 鱼=yú) and the umlauted u (ü) which is found in the word for woman (女=nǚ) and your oral confidence is bound to be in the gutter for quite some time while you try and wrap your tongue around these new shapes (it probably took me the better part of an on-and-off decade to be able to half-confidently roll my "r"s to speak Spanish, for reference). I just encountered 准确=zhǔnquè and it's giving me nightmares.
  
@@ -57,7 +59,7 @@ I think there are four major hurdles to learning Mandarin, at least for a native
  
  <!-- footnote re: japanese advantage? -->
  
- 4. The pictographic characters (汉字=hànzi) themselves. Knowing the Roman alphabet gets you ready to read (up to a first order approximation) new words in a huge swathe of new languages -- French, Spanish, Portugese, Italian, German, Czech, Swedish, Finnish, Turkish, even as remote as Vietnamese all have their share of quirky accents/symbols, but by and large can be grokked as essentially cognate at first glance, on day one of your studies. Mandarin has pinyin, but you're basically limited to spoken Mandarin without being conversant in characters -- and even then, an ever-present ritual of introductions among Chinese is to establish who has what characters in their name. Your eyes will glaze over quickly if you don't have a mental model of at least the most common characters to fall back on.
+ 4. The pictographic characters (汉字=hànzi) themselves. Knowing the Roman alphabet gets you ready to read (up to a first order approximation) new words in a huge swathe of new languages -- French, Spanish, Portugese, Italian, German, Czech, Swedish, Finnish, Turkish, even as remote as Vietnamese all have their share of quirky accents/symbols, but by and large can be grokked as essentially cognate at first glance, on day one of your studies. Mandarin has pinyin, but you're basically limited to spoken Mandarin without being conversant in characters -- and even then, an ever-present ritual of introductions among Chinese is to establish who has what characters in their name. Your eyes will glaze over quickly if you don't have a mental model of at least the most common characters to fall back on. Even worse, it's nigh on impossible for a complete neophyte to even _use a dictionary_ in Chinese (the question of [how dictionaries in Chinese are sorted](https://www.quora.com/How-are-Chinese-dictionaries-organized) is a fascinating one when considering that this organization was happening thousands of years before the possibility of [Roman] alphabetic sorting arrived to the Orient). Even character recognition keypads on phones typically expect the user to have a basic understanding of stroke order (which, by the way, is well-defined, and all literate natives know by instinct), so simply mimicking drawing the characters is likely to be fruitless in many cases.
  
 The remainder of this post will focus on the final point. Depending on your source, there are [as many as **100,000**](https://en.wikipedia.org/wiki/Chinese_characters#Number_of_characters) distinct characters in total. Unless you're some kind of wizard, it's not realistic to try and achieve that level of comprehension, perhaps even for native speakers. The fact is, most native literate Chinese are comfortable with something like 3,000-4,000 characters. Even [Unicode only provides code points](https://stackoverflow.com/a/41155368/3576984) for about 28,000 characters in all of Chinese, Japanese, and Korean, which includes significant duplication owing to often two and sometimes three depictions of the same character depending on the level of [simplification](https://en.wikipedia.org/wiki/Chinese_Character_Simplification_Scheme), e.g. labor (劳 in simplified Chinese, 労 in Japanese, and 勞 in traditional Chinese).
 
@@ -86,7 +88,7 @@ xinhua = fread('data/xinhua_counts.csv')
 setorder(xinhua, -N)
 # not ranking since don't want to deal with ties
 xinhua[ , I := .I]
-c
+
 xinhua_unique_n = prettyNum(nrow(xinhua), big.mark = ',')
 
 xinhua_n = xinhua[ , sum(N)]
@@ -96,7 +98,7 @@ xinhua_n_approx = sprintf('%%%d.0f', xinhua_n_order) %>%
   prettyNum(big.mark = ',')
 ```
 
-Doing so created a dataset of roughly `r xinhua_n_approx` appearances of `r xinhua_unique_n` distinct characters. 
+Doing so created a dataset of roughly `r xinhua_n_approx` appearances of `r xinhua_unique_n` distinct characters. What are the most common?
 
 ```{r plot_xinhua, results = 'hide', echo = FALSE, fig.height = 9}
 # add the top characters to plot_grid
@@ -109,9 +111,52 @@ color_idx = findInterval(plot_grid$N, seq(0, max(plot_grid$N),
 plot(plot_grid, col = colors[color_idx],
      main = sprintf('%d Most Frequent Characters in Xinhua\n%d Per Row', 
                     topN, char_row))
-text(plot_xy, labels = plot_grid$zi, col = color_bw[color_idx])
+text_col = color_bw[color_idx]
+text_col[plot_grid$zi %in% c('中', '国', '新', '华', '网')] = 'red'
+text(plot_xy, labels = plot_grid$zi, col = text_col)
 ```
 
+This plot shows the top `r topN` characters on Xinhua. Relative frequency is encoded by the background shading of each cell. That there is so little apparent variation in the shade outside the top row owes to the extreme relative concentration in those top rows -- the top character (`r xinhua[1L, zi]`) represents fully `r xinhua[ , sprintf('%.1f%%', 100*N[1L]/sum(N))]` of _all_ characters and is roughly `r xinhua[ , round(N[1L]/N[10L], 1L)]` times more common than even the 10th most frequent, and `r xinhua[ , round(N[1L]/N[100L], 1L)]` times more common than the 100th. The color gradient is much more gradual on the log scale:
+
+```{r plot_xinhua_log, results = 'hide', echo = FALSE, fig.height = 9}
+color_idx = findInterval(log(plot_grid$N), seq(0, log(max(plot_grid$N)), 
+                                               length.out = n_colors),
+                         rightmost.closed = TRUE)
+
+plot(plot_grid, col = colors[color_idx],
+     main = sprintf('%d Most Frequent Characters in Xinhua\n%d Per Row (Log Scale)', 
+                    topN, char_row))
+text_col = color_bw[color_idx]
+text(plot_xy, labels = plot_grid$zi, col = text_col)
+```
+
+Another way of visualizing this concentration is to depict the CDF of the distribution of characters (ordering the discretization starting from the most common character). This allows us to judge at a glance percentiles:
+
+```{r xinhua_percentiles, results = 'hide', echo = FALSE}
+xinhua[ , {
+  y = 100*cumsum(N)/sum(N)
+  par(las = 1L)
+  plot(I, y, type = 'l', lwd = 3L, yaxt = 'n',
+       xlab = 'Rank of Character Frequency', 
+       ylab = 'Cumulative %', col = 'darkgreen',
+       main = 'CDF of Character Frequency in Xinhua')
+  half <<- which.min(y < 50)
+  segments(par('usr')[1L], y[half], I[half], y[half], lty = 2L, col = 'red')
+  segments(I[half], 0, I[half], y[half], lty = 2L, col = 'red')
+  segments(par('usr')[1L], y[topN], I[topN], y[topN], lty = 2L, col = 'red')
+  segments(I[topN], 0, I[topN], y[topN], lty = 2L, col = 'red')
+  
+  axis(side = 1L, at = I[c(half, topN)], labels = I[c(half, topN)])
+  axis(side = 2L, at = c(0, y[c(half, topN)], 100), 
+       labels = c(0, 50, round(y[topN]), 100))
+}]
+```
+
+The slope of this curve at zero is quite sharp, which is just another way of thinking about the concentration that we observed above. We can also see that, despite an intimidating _total_ count of characters, the number of characters required to get a general gist of an article (defined as being able to understand half of its characters) is only `r half`! This is non-trivial (definitely won't be done in a day, a week, or even a month if you're studying part-time), but the Himalayan mountain of 100,000 characters has been reduced to a manageable Appalachian foothill (or, how about [Bukit Timah Hill](https://en.wikipedia.org/wiki/Bukit_Timah_Hill) for local context, though even that is still an order of magnitude too relatively large). `r xinhua[N == 1L, .N]` characters only appeared once in my sample; fully `r xinhua[ , sprintf('%.0f%%', 100*mean(N <= 5))]` appear at most 5 times.
+
+So, there we go, right? We can now focus our efforts on mastering the characters in this chart and get back to learning grammar, vocabulary, practicing speech, etc.
+
+Except -- not so fast. What this chart tells us is that knowing these 500 characters will enable us to understand `r xinhua[ , sprintf('%.0f%%', sum(N[1:topN])/sum(N))]` of characters _in Xinhua articles_, _from the day on which I sampled these articles_ back in November 2017. 
 
 # Data from Xinhua's Front Page
 
