@@ -4,7 +4,7 @@
 #   visiting one of them, until a total
 #   of 100,000 (unique) links are accumulated;
 #   write out these links, then
-#   sample 1,000 of the pages and 
+#   sample 2,500 of the pages and 
 #   tabulate the characters found therein
 library(rvest)
 library(data.table)

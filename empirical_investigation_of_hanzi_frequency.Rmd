@@ -75,7 +75,7 @@ Now that we've defined our goal clearly, it should be _easy_ to provide a quanti
 
 With this in mind, I fired up my [`xpath`](https://www.w3schools.com/xml/xpath_intro.asp) skills and navigated on over to the website of China's official state media organization, [Xinhua=新华](http://www.xinhuanet.com/). Even if you don't understand a white of Chinese, knowing that it's a news website, the basic structure should be clear. The day's top headlines (at least according to Xinhua's editors) are presented with pictures and links to articles.
 
-I decided to pull all the characters from all links (`<a>` nodes) on the top page, then follow all of the internal links on the first page and pull the characters from the linked pages as well. Some links/photo captions/paragraphs are intentionally duplicated, so subsequent instances of identical blocks were eliminated. Full code is available on the [project's GitHub repo](https://github.com/MichaelChirico/top_hanzi); here's the core snippet that extracts and counts the characters from an article:
+I decided to pull all the characters from all links (`<a>` nodes) on the top page, then follow all of the internal links on the first page and pull the characters from the linked pages as well. Some links/photo captions/paragraphs are intentionally duplicated, so subsequent instances of identical blocks were eliminated. Full code is available on the [project's GitHub repo](https://github.com/MichaelChirico/top_hanzi/blob/master/tabulate_xinhua.R); here's the core snippet that extracts and counts the characters from an article:
 
 ```{r counts_from_xinhua_article, eval = FALSE}
 article_counts = read_html_or_sleep(article) %>% 
@@ -143,7 +143,7 @@ Another way of visualizing the concentration intimated above is to depict the CD
 xinhua[ , {
   y = 100*cumsum(N)/sum(N)
   par(las = 1L)
-  plot(I, y, type = 'l', lwd = 3L, yaxt = 'n',
+  plot(c(0, I), c(0, y), type = 'l', lwd = 3L, yaxt = 'n',
        xlab = 'Rank of Character Frequency', 
        ylab = 'Cumulative %', col = 'darkgreen',
        main = 'CDF of Character Frequency in Xinhua')
@@ -205,7 +205,7 @@ zaobao_n_approx = sprintf('%%%d.0f', zaobao_n_order) %>%
 ```
 
 
-My next idea, given that I'm living in Singapore, was to simply abandon using a Chinese news service in favor of using the Chinese-language paper in the Straits here -- [Zaobao=早报](http://www.zaobao.com.sg/). This required very little in the way of code adjustment, and the basic idea was the same -- find internal links from the top-level page, extract their characters, then extract the characters from the linked articles. This time, I got `r zaobao_n_approx` occurrences of `r zaobao_unique_n` distinct characters. 
+My next idea (code [here](https://github.com/MichaelChirico/top_hanzi/blob/master/tabulate_zaobao.R)), given that I'm living in Singapore, was to simply abandon using a Chinese news service in favor of using the Chinese-language paper in the Straits here -- [Zaobao=早报](http://www.zaobao.com.sg/). This required very little in the way of code adjustment, and the basic idea was the same -- find internal links from the top-level page, extract their characters, then extract the characters from the linked articles. This time, I got `r zaobao_n_approx` occurrences of `r zaobao_unique_n` distinct characters. 
 
 ```{r plot_zaobao, results = 'hide', echo = FALSE, fig.height = 9}
 # wipe earlier data
@@ -231,7 +231,7 @@ And here's the CDF plot:
 zaobao[ , {
   y = 100*cumsum(N)/sum(N)
   par(las = 1L)
-  plot(I, y, type = 'l', lwd = 3L, yaxt = 'n',
+  plot(c(0, I), c(0, y), type = 'l', lwd = 3L, yaxt = 'n',
        xlab = 'Rank of Character Frequency', 
        ylab = 'Cumulative %', col = 'darkgreen',
        main = 'CDF of Character Frequency in Zaobao')
@@ -259,5 +259,24 @@ Personally, I want to learn Mandarin for a much more practical purpose -- my pri
 
 Nevertheless, I found myself struggling a bit to find another online corpus ready for analysis, especially one that fit my needs as a language learner. Instead, I identified another corpus of written Chinese data that I thought would be sufficiently orthogonal to that I uncovered in Zaobao and Xinhua that I thought it worth pursuing -- [Chinese Wikipedia](https://zh.wikipedia.org/). 
 
-The biggest appeal of Wikipedia was the potential size -- as of this writing, there are [roughly one million articles](https://en.wikipedia.org/wiki/List_of_Wikipedias) on the Mandarin version of Wikipedia.
+The biggest appeal of Wikipedia is its size as a corpus -- as of this writing, there are [roughly one million articles](https://en.wikipedia.org/wiki/List_of_Wikipedias) on the Mandarin version of Wikipedia, each of which has roughly 620 characters on average. It also breaks the reliance on a small number of authors writing in the journalistic mode about newsworthy topics; the tradeoff of course is that this writing is instead in the _encyclopedic_ mode, the consequences of which will make themselves known shortly. 
+
+I couldn't quite figure out how/where to access Wikipedia's article text through an API (if you have a way, I'd love to know!), so instead I again set about writing a script to scrape articles. The idea of this script (code [here](https://github.com/MichaelChirico/top_hanzi/blob/master/crawl_and_tabulate_wikipedia.R)) is to accumulate a massive list of random articles (my target was 100,000, on the order of 10% of all articles) and then to tabulate the characters in a randomly selected subset of 2,500 of these articles.
+
+I didn't find a list of links to all Wikipedia articles, so a simple random subset of all links proved impossible. Instead, I set up a crawler that randomly jumps around Chinese Wikipedia by randomly following links to articles it's seen. All of the distinct internal links on each page are recorded before moving on to the next one. More specifically, I initialized the crawl on the [front page](https://zh.wikipedia.org/wiki/%E7%BB%B4%E5%9F%BA%E7%99%BE%E7%A7%91), then recorded its linked articles and opened one at random. From there, each page is processed as follows: (1) record all of its distinct internal links (being sure to exclude special links to files, images, within-page anchors, or wikimedia files); (2) find an as-yet unexplored link from the current page (if there are none, randomly select one from the total of as-yet unexplored links). To avoid pillorying Wikipedia's servers, I also built in a heuristic sleep timer to spread out the `GET` requests (this was not completely successful, as I had to restart the crawler several times anyway).
+
+```{r crawl_wikipedia, eval = FALSE}
+#zh_stem: https://zh.wikipedia.org
+links_here = read_html_or_sleep(paste0(zh_stem, cur_link)) %>% 
+  html_nodes(xpath = link_xp) %>% 
+  html_attr('href') %>% unique
+link_list = unique(c(link_list, links_here))
+
+unexplored = setdiff(links_here, explored)
+if (!length(unexplored)) unexplored = setdiff(link_list, explored)
+
+cur_link = sample(unexplored, 1L)
+explored = c(explored, cur_link)
+Sys.sleep(max(.5 + rnorm(1L, sd = .1), 0))
+```
 
